@@ -68,15 +68,49 @@ userSchema.pre("save", async function (next) {
         return next();
         
     }
-        this.password = bcrypt.hash(this.password, 10)
+        this.password =await bcrypt.hash(this.password, 10)
         next()
     
 } )
 
-userSchema.method.isPasswordcorrect = async function (password) {
+userSchema.methods.isPasswordcorrect = async function (password) {
 
     return await bcrypt.compare(password ,this.password) //true of false
     
 }
 
-export const user = mongoose.model("User",userSchema)
+userSchema.methods.generateAccessToken = function () {
+
+   return jwt.sign(
+        {
+            _id:this._id,
+            email:this.email,
+            fullname:this.fullname,
+            username:this.username
+        },
+
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+            expiresIn:process.env.ACCESS_TOKEN_EXPIRY
+        }
+    )
+    
+}
+
+userSchema.methods.generateRefreshToken = function () {
+
+    return jwt.sign(
+        {
+            _id:this._id,
+            
+        },
+
+        process.env.REQUEST_TOKEN_SECRET,
+        {
+            expiresIn:process.env.REQUEST_TOKEN_EXPIRY
+        }
+    )
+    
+}
+
+export const User = mongoose.model("User",userSchema)
