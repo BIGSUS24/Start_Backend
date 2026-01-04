@@ -28,7 +28,7 @@ field?.trim()==="")) {
  //check if user exists 
  //db query meaning it will check in the db using mongoose model
 
- const existedUser = User.findOne(
+ const existedUser = await  User.findOne(
     {
         $or:[{username},{email}]//returns true of false
     }
@@ -39,8 +39,8 @@ field?.trim()==="")) {
   
     }
 //check for image and avatar upload
-    const AvatarLocalPath = req.files?.avatar[0].Path;
-    const coverImageLocalPath = req.files?.coverImage[0].Path;
+    const AvatarLocalPath = req.files?.avatar[0].path;
+    const coverImageLocalPath = req.files?.coverImage[0].path;
 
      if (!AvatarLocalPath) {
         
@@ -48,8 +48,8 @@ field?.trim()==="")) {
   
     }
     //upload to cloudinary
-    const Avatar = await uploadOnCloudinary(avatarLocalPath)
-    const coverImageLocal = await uploadOnCloudinary(coverImageLocalPath)
+    const Avatar = await uploadOnCloudinary(AvatarLocalPath);
+    const coverImageLocal = await uploadOnCloudinary(coverImageLocalPath);
 
      if (!Avatar) {
         
@@ -59,16 +59,13 @@ field?.trim()==="")) {
 
     //create user object in db
    const user = await User.create({
-        fullname,
-        email,
-        username: username.toLowerCase(),
-        avatar : avatar.url,
-        coverImage : coverImageLocal?.url ||"",
-        password
-    }
-    
-
-)
+  fullname,
+  email,
+  username: username.toLowerCase(),
+  avatar: Avatar.url,
+  coverImage: coverImageLocal?.url || "",
+  password
+});
 
 //check for user creation success
 const CreatedUser = await User.findById(user._id).select("-password -refreshToken") 
