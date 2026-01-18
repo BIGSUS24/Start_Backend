@@ -13,35 +13,33 @@ cloudinary.config({
 
 const uploadOnCloudinary = async (localFilePath) => {
   try {
-
     // if there is no path to the file
     if (!localFilePath) {
       return null;
     }
 
     // upload the file in our pc to cloud
-    // ❌ WAS:
-    // await cloudinary.uploader.upload(localFilePath,{resource_type:"auto"})
-    //
-    // ✅ CHANGED TO (we STORE the result):
     const response = await cloudinary.uploader.upload(
       localFilePath,
       { resource_type: "auto" }
     );
 
     // check the upload in console
-    // ❌ WAS: response was undefined
-    // ✅ NOW: response is the upload result from cloudinary
     console.log("file uploaded on cloud", response.url);
 
-    // ❌ WAS: returning undefined response
-    // ✅ NOW: returning actual cloudinary response
+    // delete local file safely
+    if (fs.existsSync(localFilePath)) {
+      fs.unlinkSync(localFilePath);
+    }
+
     return response;
 
   } catch (error) {
 
-    // remove the local saved file from the system
-    fs.unlinkSync(localFilePath);
+    // remove the local saved file from the system (only if exists)
+    if (fs.existsSync(localFilePath)) {
+      fs.unlinkSync(localFilePath);
+    }
 
     return null;
   }
