@@ -7,7 +7,8 @@ import ApiResponse from "../utils/ApiResponce.js"
 const generateRefreshandAccessTokens = async (userId) => {
     try {
 
-        const user =  User.findById(userId)
+       
+        const user = await User.findById(userId)
         const AccessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken()
 
@@ -116,7 +117,7 @@ const loginUser  = asyncHandler (async (req,res) => {
 
     const {username,email,password}= req.body
 
-    if (!username || !email) {
+    if (!username && !email) {
 
         throw new ApiErrors(400,"username or email required")
         
@@ -151,12 +152,12 @@ const loginUser  = asyncHandler (async (req,res) => {
     .status(200)
     .cookie("AccessToken",AccessToken,options)
     .cookie("refreshToken",refreshToken,options)
-    .json(200,{
+    .json(new ApiResponse(200,{
 
         user :loggedInUser,AccessToken,refreshToken
 
     },
-"user Logged in")
+"user Logged in"))
 
 })
 
@@ -171,10 +172,9 @@ const logoutUser = asyncHandler(async (req,res) => {
             new:true
         }
     )
-    
-})
 
-const options={
+
+    const options={
         httpOnly : true,
         secure :true
     }
@@ -184,6 +184,10 @@ const options={
     .clearCookie("AccessToken",AccessToken,options)
     .clearCookie("refreshToken",refreshToken,options)
     .json(new ApiResponse(200,"User Logged OUT"))
+    
+})
+
+
 
 export {registerUser,
     loginUser,logoutUser
