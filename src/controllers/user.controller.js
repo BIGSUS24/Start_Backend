@@ -241,7 +241,7 @@ if (currentPassword !== confirmPassword) {
     
     throw new ApiErrors(401,"password does not match")
 }
-const user = User.findById(req.user_id)
+const user = User.findById(req.user._id)
 
 const isPasswordcorrect = await user.isPasswordcorrect(oldPassword)
 
@@ -262,8 +262,81 @@ return res
     
 })
 
+const getCurrentUser = asyncHandler(async (req,res) => {
+
+    return res
+    .status(200
+    .json(200,req.user,"Current User Fetched")
+    )
+    
+})
+
+const updateAccountDetails = asyncHandler(async (req , res) => {
+
+    const {fullname,email} = req.body
+
+    if (!fullname || !email) {
+
+        throw new ApiErrors(401,"Fill all the Blanks")
+
+        
+    }
+   const user = User.findByIdAndUpdate(req.user._id,
+        {$set:{
+            fullname,
+            email
+        }},{new:true}
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200,user,"Account details updated"))
+})
+
+const updateUserAvatar = asyncHandler(async (req,res) => {
+
+    const avatarLocalPath = req.file?.path
+
+    if (!avatarLocalPath) {
+        throw new ApiErrors(401,"Avatar is missing")
+    }
+  const avatar = await uploadOnCloudinary(avatarLocalPath)
+    if (!avatar.url) {
+        throw new ApiErrors(401,"Avatar upload failed")
+    }
+    const user = await User.findByIdAndUpdate(req.user._id,{
+        $set:{
+            avatar:avatar.url
+        }
+    },{new:true}).select("-password")
+})
+const updateUserCoverImage = asyncHandler(async (req,res) => {
+
+    const coverImageLocalPath = req.file?.path
+
+    if (!avatarLocalPath) {
+        throw new ApiErrors(401,"Cover Image is missing")
+    }
+  const coverImage = await uploadOnCloudinary(avatarLocalPath)
+    if (!coverImage.url) {
+        throw new ApiErrors(401,"Cover Image upload failed")
+    }
+    const user = await User.findByIdAndUpdate(req.user._id,{
+        $set:{
+            coverImage:coverImage.url
+        }
+    },{new:true}).select("-password")
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200,user,"Cover Image updated"))
+})
 export {registerUser,
     loginUser,logoutUser,
     refreshAccessToken,
-    changeCurrentPassword
+    changeCurrentPassword,
+    getCurrentUser,
+    updateAccountDetails,
+    updateUserAvatar,
+    updateUserCoverImage    
 }
