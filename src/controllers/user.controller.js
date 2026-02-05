@@ -366,8 +366,40 @@ const getUserChannelProfile = asyncHandler(async (req,res) => {
             as:"SubscribedTo"
 
         }
+    },
+    {
+        $addFields:{
+     subscribeCount:{
+        $size:"Subscribers"
+    },
+     channelSubscribedCount:{
+        $size:"SubscribedTo"
+    },
+    isSubscribed:{
+        $cond :{
+            if :{$in:[req.user?._id,"$Subscribers.subscriber"]},
+                    then:true,
+                 else:false
+        }
+    }
+        }
+    },
+    {
+        $project:{
+            fullname :1,
+            username:1,
+            email:1,
+            subscribCount:1,
+            channelSubscribedCount:1,
+            isSubscribed:1,
+            avatar:1,
+            coverImage:1,
+        }
     }
    ])
+   return res
+   .status(200)
+   .json(new ApiResponse(200,channel[0],"channel fetched"))
 })
 export {registerUser,
     loginUser,logoutUser,
@@ -376,5 +408,6 @@ export {registerUser,
     getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
-    updateUserCoverImage    
+    updateUserCoverImage,
+    getUserChannelProfile   
 }
