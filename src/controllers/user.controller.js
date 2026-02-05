@@ -265,9 +265,9 @@ return res
 const getCurrentUser = asyncHandler(async (req,res) => {
 
     return res
-    .status(200
+    .status(200)
     .json(200,req.user,"Current User Fetched")
-    )
+    
     
 })
 
